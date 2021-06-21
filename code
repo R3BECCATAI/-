@@ -1,0 +1,31 @@
+from __future__ import unicode_literals
+from threading import Timer
+from wxpy import *
+from wechat_sender import Sender
+import time,requests
+
+bot = Bot(console_qr=2,cache_path='botoo.pk1') # 把consol_qr=2去掉，二维码是当做图片弹出来，否则则是以像素的方式打印出来，后面的参数是热登录，
+
+def get_news():
+    # 这里是把今日糍粑每日一句中拿过来的信息发送给你朋友,可以换别的，啊在想浅蓝的风要不要试试hhh
+    url = "http://open.iciba.com/dsapi/"
+    r = requests.get(url)
+    contents = r.json()['content']
+    translation = r.json()['translation']
+    return contents,translation
+
+def send_news():
+    try:
+        ufriend = bot.friends().search(u'Mr-Lee')[0] # 朋友微信昵称（不是备注，不是微信账号）
+        ufriend.send(get_news()[0])
+        ufriend.send(get_news()[1][5:])
+        ufriend.send(u'晚安')
+        t = Timer(86400,send_news)  # 86400是间隔时间（一天）
+        t.start()
+
+    except:
+        ufriend = bot.friends().search("L")[0]  # 你的微信名称，不是微信号
+        ufriend.send(u'消息发送失败')
+
+if __name__ == '__main__':
+    send_news()
